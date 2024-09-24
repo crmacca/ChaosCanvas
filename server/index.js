@@ -227,7 +227,7 @@ io.on('connection', (socket) => {
 
   // Listen for chat messages
   socket.on('chatMessage', (data) => {
-    const { username, message } = data;
+    let { username, message } = data;
 
     if (!filterMessage(message)) {
       socket.emit('chatError', { error: 'Message contains inappropriate content or URLs.' });
@@ -238,7 +238,7 @@ io.on('connection', (socket) => {
     const input = message;
     const matches = matcher.getAllMatches(input);
     let newMsg = censor.applyTo(input, matches)
-
+    username = matcher.hasMatch(username) ? "Anonymous" : username
     // Broadcast the message if it's valid
     io.emit('chatMessage', { username, newMsg });
   });
