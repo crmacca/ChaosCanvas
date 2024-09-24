@@ -1,0 +1,21 @@
+// schema.prisma
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Pixel {
+  id        Int      @id @default(autoincrement())
+  x         Int
+  y         Int
+  color     String
+  ipAddress String
+  updatedAt DateTime @updatedAt
+
+  @@unique([x, y])  // This creates a composite unique constraint
+}
+

@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Define a basic pixel grid system */
+.pixel {
+    width: 10px;
+    height: 10px;
+    box-sizing: border-box;
+    background-color: #fff;
+  }
+  
+  .pixel-bordered {
+    border: 0.5px solid #ccc;
+  }
+  
+  .pixel-bordered-right {
+    border-right: 1px solid #333;
+  }
+  
+  .pixel-bordered-bottom {
+    border-bottom: 1px solid #333;
+  }
+  
+  .pixel-colored {
+    background-color: var(--pixel-color);
+  }
+  
+  /* Wrapper to center the grid */
+  .grid-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-left: 20px;
+    margin-top: 20px;
+  }
+  
+  .grid {
+    display: grid;
+  }
+  
+  @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
