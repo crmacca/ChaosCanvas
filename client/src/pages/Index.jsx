@@ -125,7 +125,6 @@ const IndexPage = () => {
 
     const socket = io(window.location.origin, {
       path: "/api/socket.io", // Match the server path
-      transports: ['websocket'],
       query: { userId: storedUserId },
     });
     socketRef.current = socket; // Store socket reference
