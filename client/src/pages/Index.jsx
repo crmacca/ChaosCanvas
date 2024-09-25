@@ -17,7 +17,7 @@ const IndexPage = () => {
   const canvasRef = useRef(null);
   const [hoveredPixel, setHoveredPixel] = useState({ x: null, y: null });
   const [activeTool, setActiveTool] = useState("move");
-  const [isDisconnected, setIsDisconnected] = useState(true);
+  const [isDisconnected, setIsDisconnected] = useState(false);
   const [gridEnabled, setGridEnabled] = useState(true);
   const [termsAndConditionsAgreed, setTermsAndConditionsAgreed] =
     useState("loading");
@@ -163,7 +163,7 @@ const IndexPage = () => {
 
     // Listen for connection and disconnection events
     socket.on('connect', () => {
-      setIsDisconnected(true);  // Reset state on successful connection
+      setIsDisconnected(false);  // Reset state on successful connection
     });
 
     socket.on('disconnect', () => {
