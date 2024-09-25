@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');  // For generating unique cache IDs
 const linkify = require('linkifyjs');    // Import linkifyjs
+const path = require('path')
 const {
 	RegExpMatcher,
 	TextCensor,
@@ -18,7 +19,7 @@ const matcher = new RegExpMatcher({
 
 const prisma = new PrismaClient();
 const app = express();
-const PORT = 3550;
+const PORT = 80;
 
 const size = {
   width: 300,
@@ -26,7 +27,7 @@ const size = {
 }
 
 app.use(cors({
-  origin: '*', // Allow all origins (you can restrict this to specific origins if needed)
+  origin: 'https://chaoscanvas.cmcdev.net', // Allow all origins (you can restrict this to specific origins if needed)
   methods: ['GET', 'POST'], // Allow specific HTTP methods
   allowedHeaders: ['Content-Type'] // Allow specific headers
 }));
@@ -196,6 +197,8 @@ async function getCanvasData(socket) {
   });
 }
 
+// Serve static files from the React app build directory
+app.use(express.static(path.join(__dirname, 'build')));
 
 // Set up HTTP server
 const server = app.listen(PORT, () => {
@@ -204,8 +207,9 @@ const server = app.listen(PORT, () => {
 
 // Set up Socket.IO server
 const io = new Server(server, {
+  path: "/socket.io",
   cors: {
-    origin: '*',
+    origin: 'https://chaoscanvas.cmcdev.net',
     methods: ['GET', 'POST']
   }
 });
@@ -220,8 +224,19 @@ function filterMessage(message) {
   return true;  // Message is valid
 }
 
+let uniqueUsers = new Set();
+
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
+  const userId = socket.handshake.query.userId;
+
+  if (!uniqueUsers.has(userId)) {
+    uniqueUsers.add(userId);
+  }
+
+  // Emit the current unique user count
+  io.emit('userCount', uniqueUsers.size);
+
   getCanvasData(socket);  // Fetch and send canvas data when a client connects
   io.emit('userCount', io.engine.clientsCount); // Broadcast user count
 
@@ -248,12 +263,18 @@ io.on('connection', (socket) => {
     handlePixelChange(updatedPixels, socket.handshake.address);
   });
 
-  // Handle disconnections
-  socket.on('disconnect', () => {
-    io.emit('userCount', io.engine.clientsCount); // Broadcast user count
-  });
-  
+  // Emit the current unique user count
+  io.emit('userCount', uniqueUsers.size);
 
+  socket.on('disconnect', () => {
+    // Remove user if no other sockets exist for this userId
+    const connectedSockets = Array.from(io.sockets.sockets).filter(([_, s]) => s.handshake.query.userId === userId);
+    if (connectedSockets.length === 0) {
+      uniqueUsers.delete(userId);
+    }
+
+    io.emit('userCount', uniqueUsers.size);
+  });
 });
 
 // Periodically flush cache to the DB and broadcast to all clients

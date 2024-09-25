@@ -3,18 +3,22 @@ import TermsModal from "../components/TermsModal";
 import { io } from "socket.io-client";
 import Toolbar from "../components/Toolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { v4 as uuidv4 } from "uuid";
 import {
   faArrowRight,
   faArrowsLeftRight,
   faMagnifyingGlass,
   faPaperPlane,
   faUpDownLeftRight,
+  faWifi,
 } from "@fortawesome/free-solid-svg-icons";
 
 const IndexPage = () => {
   const canvasRef = useRef(null);
+  const [userId, setUserId] = useState(null);
   const [hoveredPixel, setHoveredPixel] = useState({ x: null, y: null });
   const [activeTool, setActiveTool] = useState("move");
+  const [isDisconnected, setIsDisconnected] = useState(false);
   const [gridEnabled, setGridEnabled] = useState(true);
   const [termsAndConditionsAgreed, setTermsAndConditionsAgreed] =
     useState("loading");
@@ -112,7 +116,19 @@ const IndexPage = () => {
   };
 
   useEffect(() => {
-    const socket = io("192.168.1.180:3550");
+
+    let storedUserId = localStorage.getItem('userId');
+    if (!storedUserId) {
+      // Generate a new unique ID for the user
+      storedUserId = uuidv4();
+      localStorage.setItem('userId', storedUserId);
+    }
+    setUserId(storedUserId);
+
+    const socket = io("localhost", {
+      path: "/socket.io", // Match the server path
+      query: { userId: storedUserId },
+    });
     socketRef.current = socket; // Store socket reference
 
     // Handle incoming chat messages
@@ -145,6 +161,19 @@ const IndexPage = () => {
 
     socket.on("pixelUpdate", (updatedPixels) => {
       applyChangesToCanvas(updatedPixels); // Use memoized function
+    });
+
+    // Listen for connection and disconnection events
+    socket.on('connect', () => {
+      setIsDisconnected(false);  // Reset state on successful connection
+    });
+
+    socket.on('disconnect', () => {
+      setIsDisconnected(true);  // Show overlay when disconnected
+    });
+
+    socket.on('reconnect_attempt', () => {
+      console.log('Attempting to reconnect...');
     });
 
     return () => socket.disconnect(); // Cleanup on component unmount
@@ -616,6 +645,12 @@ const IndexPage = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {isDisconnected && (
+        <div className="fixed top-0 left-0 w-full bg-white rounded-xl drop-shadow-xl border border-red-500 flex items-center text-red-500 text-center p-2 z-50 font-inter text-lg">
+          <FontAwesomeIcon icon={faWifi} />
+          Connection Lost, attempting to reconnect...
         </div>
       )}
       {/* Live Users Counter */}
