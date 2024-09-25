@@ -207,7 +207,7 @@ const server = app.listen(PORT, () => {
 
 // Set up Socket.IO server
 const io = new Server(server, {
-  path: "/socket.io",
+  path: "/api/socket.io",
   cors: {
     origin: 'https://chaoscanvas.cmcdev.net',
     methods: ['GET', 'POST']

@@ -123,8 +123,8 @@ const IndexPage = () => {
       localStorage.setItem('userId', storedUserId);
     }
 
-    const socket = io("localhost", {
-      path: "/socket.io", // Match the server path
+    const socket = io(window.location.origin, {
+      path: "/api/socket.io", // Match the server path
       query: { userId: storedUserId },
     });
     socketRef.current = socket; // Store socket reference
