@@ -200,6 +200,11 @@ async function getCanvasData(socket) {
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, 'build')));
 
+// Catch-all route for React (this should be after all your other routes)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 // Set up HTTP server
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
