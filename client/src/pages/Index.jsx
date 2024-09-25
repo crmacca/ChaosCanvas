@@ -15,10 +15,9 @@ import {
 
 const IndexPage = () => {
   const canvasRef = useRef(null);
-  const [userId, setUserId] = useState(null);
   const [hoveredPixel, setHoveredPixel] = useState({ x: null, y: null });
   const [activeTool, setActiveTool] = useState("move");
-  const [isDisconnected, setIsDisconnected] = useState(false);
+  const [isDisconnected, setIsDisconnected] = useState(true);
   const [gridEnabled, setGridEnabled] = useState(true);
   const [termsAndConditionsAgreed, setTermsAndConditionsAgreed] =
     useState("loading");
@@ -123,7 +122,6 @@ const IndexPage = () => {
       storedUserId = uuidv4();
       localStorage.setItem('userId', storedUserId);
     }
-    setUserId(storedUserId);
 
     const socket = io("localhost", {
       path: "/socket.io", // Match the server path
@@ -165,7 +163,7 @@ const IndexPage = () => {
 
     // Listen for connection and disconnection events
     socket.on('connect', () => {
-      setIsDisconnected(false);  // Reset state on successful connection
+      setIsDisconnected(true);  // Reset state on successful connection
     });
 
     socket.on('disconnect', () => {
@@ -648,9 +646,11 @@ const IndexPage = () => {
         </div>
       )}
       {isDisconnected && (
-        <div className="fixed top-0 left-0 w-full bg-white rounded-xl drop-shadow-xl border border-red-500 flex items-center text-red-500 text-center p-2 z-50 font-inter text-lg">
-          <FontAwesomeIcon icon={faWifi} />
-          Connection Lost, attempting to reconnect...
+        <div className="w-full fixed top-0 left-0 flex items-center justify-center p-5">
+          <div className="gap-2 max-w-xl bg-white rounded-xl drop-shadow-xl border-[.5px] border-red-300 flex items-center text-red-500 text-center p-2 z-50 font-inter text-lg">
+            <FontAwesomeIcon icon={faWifi} />
+            Connection Lost, attempting to reconnect...
+          </div>
         </div>
       )}
       {/* Live Users Counter */}
